@@ -120,6 +120,12 @@ const app = {
     isPlaying: false, // Trạng thái bài hát
     isRepeat: false,
     isRandom: false,
+    config: JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
+    setConfig: function(key,value) {
+        this.config[key] = value;
+        localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
+    },
+
    
 
 
@@ -238,12 +244,12 @@ const app = {
             timeDuration.innerText = `${duration_minutes}:${duration_seconds}`
         });
         //Xử lí khi tua nhạc
-        progressBar.onchange = function(e){
+        progressBar.oninput = function(e){
             const seekTime = audio.duration / 100 * e.target.value;
             audio.currentTime = seekTime;
         };
         // Xử lí âm lượng 
-        volumnBar.onchange = function(e){
+        volumnBar.oninput = function(e){
             theVolume = e.target.value /100;
             audio.volume = theVolume;
             if(theVolume === 0){
@@ -291,7 +297,8 @@ const app = {
         
     // A6 - Random song
         randomBtn.onclick = function(e){
-            app.isRandom = !app.isRandom;
+            _this.isRandom = !_this.isRandom;
+            _this.setConfig('isRandom',_this.isRandom);
             randomBtn.classList.toggle('active', _this.isRandom);
         }
 
@@ -307,6 +314,7 @@ const app = {
         // Xử lí khi có repeat
         repeatBtn.onclick = function(){
             _this.isRepeat = !_this.isRepeat;
+            _this.setConfig('isRepeat', _this.isRepeat);
             repeatBtn.classList.toggle('active', _this.isRepeat);
         }
         // A10 - Play song khi click
@@ -315,9 +323,9 @@ const app = {
             if(songNode ||e.target.closest('.option')){
                 // Xử lí khi click vào bài hát 
                 if (songNode){
-                    app.currentIndex = Number(songNode.dataset.index);
-                    app.loadCurrentSong();
-                    app.render();
+                    _this.currentIndex = Number(songNode.dataset.index);
+                    _this.loadCurrentSong();
+                    _this.render();
                     audio.play();
                 }
                 // Xử lí khi ấn vào option
@@ -327,7 +335,10 @@ const app = {
             }
         }
     },
-
+    loadConfig: function(){
+        this.isRandom = this.config.isRandom;
+        this.isRepeat = this.config.isRepeat;
+    },
     loadCurrentSong: function(){
         titleSongName.innerText = this.currentSong.name;
         titleSongArtist.innerText = this.currentSong.singer;
@@ -392,6 +403,9 @@ const app = {
         // Tải thông tin bài hát đầu tiên khi chạy app
         this.loadCurrentSong(); 
         this.handleEvent();
+        // Hiển thị trạng thái ban đầu của btn repeatBtn và randombtn
+        randomBtn.classList.toggle('active',app.isRandom);
+        repeatBtn.classList.toggle('active',app.isRepeat);
     }
 
 }
